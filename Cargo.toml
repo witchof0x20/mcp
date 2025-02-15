@@ -10,7 +10,6 @@ repository = "https://github.com/witchof0x20/mcp"
 #documentation = "https://docs.rs/..."
 homepage = "https://github.com/witchof0x20/mcp"
 keywords = ["mcp"]
-edition = "2021"
 
 [lib]
 name = "mcp"
