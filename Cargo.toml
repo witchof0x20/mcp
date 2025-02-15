@@ -1,0 +1,33 @@
+[package]
+name = "mcp"
+version = "0.1.0"
+edition = "2021"
+description = "Protocol for managing and passing context between language models"
+authors = ["Jade Harley <jade@witchof.space>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+repository = "https://github.com/witchof0x20/mcp"
+#documentation = "https://docs.rs/..."
+homepage = "https://github.com/witchof0x20/mcp"
+keywords = ["mcp"]
+edition = "2021"
+
+[lib]
+name = "mcp"
+
+[dependencies]
+bytes = "1.10.0"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
+serde_valid = "1.0.5"
+yoke = { version = "0.7.5", features = ["derive", "serde"] }
+
+[build-dependencies]
+prettyplease = "0.2.29"
+proc-macro2 = "1.0.93"
+quote = "1.0.38"
+schemars = "0.8.21"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
+syn = { version = "2.0.98", features = ["extra-traits", "fold", "full", "test", "visit", "visit-mut"] }
+typify = "0.3.0"
