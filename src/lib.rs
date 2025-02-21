@@ -13,5 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License along with
 // this program.  If not, see <http://www.gnu.org/licenses/>.
-/// Type schemas for various MCP operations
+/// High-level representations and schemas for the Model Context Protocol
 pub mod schema;
+/// Derive macro for Tool queries
+pub use tool_macros;
+/// Server component
+#[cfg(feature = "server")]
+pub mod server;

@@ -28,7 +28,6 @@ fn main() {
     let mut settings = TypeSpaceSettings::default();
     let settings = settings
         .with_struct_builder(false)
-        .with_derive("::yoke::Yokeable".to_string())
         // Result... really?
         .with_patch(
             "Result",
@@ -58,8 +57,8 @@ mod zerocopify {
         parse_quote,
         punctuated::Punctuated,
         visit_mut::{self, VisitMut},
-        Attribute, Fields, File, GenericParam, Lifetime, LifetimeParam, Meta, Token, Type,
-        TypePath,
+        Attribute, Fields, File, GenericParam, Item, ItemMod, Lifetime, LifetimeParam, Meta, Token,
+        Type, TypePath,
     };
     /// Returns true if the type (or any nested type) contains a lifetime.
     fn type_contains_lifetime(ty: &Type) -> bool {
@@ -469,25 +468,26 @@ mod zerocopify {
     }
 
     /// Applies both transformation phases to the AST.
-    pub fn transform_ast(ast: &mut File, ignored_types: &[&'static str]) {
+    pub fn transform_ast(original_ast: &mut File, ignored_types: &[&'static str]) {
+        let mut ast = original_ast.clone();
         loop {
             let mut modified = false;
 
             // Phase 1: Upgrade definitions and usages.
             {
                 let mut transformer = SerdeBorrowTransformer::new(ignored_types);
-                transformer.visit_file_mut(ast);
+                transformer.visit_file_mut(&mut ast);
                 modified |= transformer.modified;
             }
 
             // Phase 2: Ensure every usage of a type that now has a lifetime parameter provides one.
             {
-                let lifetime_types = collect_lifetime_types(ast);
+                let lifetime_types = collect_lifetime_types(&ast);
                 let mut transformer = LifetimeUsageTransformer {
                     lifetime_types,
                     modified: false,
                 };
-                transformer.visit_file_mut(ast);
+                transformer.visit_file_mut(&mut ast);
                 modified |= transformer.modified;
             }
 
@@ -495,5 +495,21 @@ mod zerocopify {
                 break;
             }
         }
+
+        let doc_attr = syn::parse_quote!(
+            #[doc = "Zero-copy version of the schema"]
+        );
+        let module = ItemMod {
+            attrs: vec![doc_attr],
+            vis: syn::Visibility::Public(syn::token::Pub::default()),
+            mod_token: syn::token::Mod::default(),
+            ident: syn::Ident::new("zerocopy", proc_macro2::Span::call_site()),
+            content: Some((syn::token::Brace::default(), ast.items)),
+            semi: None,
+            unsafety: None,
+        };
+
+        // Add the module to file1's items
+        original_ast.items.push(Item::Mod(module));
     }
 }
